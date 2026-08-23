@@ -1,31 +1,329 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ============================================================
+   SIGEPSI — Design System (Global Styles)
+   Sistema de Gestión Psicológica Integral
+   Estética: Salud Mental (Calma, Empatía, Elegancia Premium)
+   ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* --- Design Tokens --- */
 :root {
-  /* Paleta Clínica y Formal (Salud Mental) */
-  --primary-color: #0f766e; /* Teal oscuro, transmite calma y profesionalismo */
-  --primary-hover: #0d9488;
-  --secondary-color: #0369a1; /* Azul médico */
+  /* Colores Principales — Tonos suaves, orgánicos y calmantes (Salvia, Verde Agua, Arena) */
+  --color-primary: #3d6a66;        /* Verde Salvia oscuro (Elegante y calmante) */
+  --color-primary-light: #578a85;  /* Verde Salvia medio */
+  --color-primary-dark: #2a4a47;   /* Verde profundo */
+  --color-primary-bg: #eef4f3;     /* Fondo Salvia muy suave */
+
+  /* Colores Secundarios — Tonos cálidos para dar humanidad */
+  --color-secondary: #d4a373;      /* Tono arena/tierra cálido */
+  --color-secondary-light: #e6ccb2;
+
+  /* Superficies */
+  --color-bg: #f9fbfb;             /* Casi blanco, con un toque muy leve de verde agua */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f3f6f6;
+  --color-sidebar: #2f4846;        /* Verde profundo elegante para el panel lateral */
+  --color-sidebar-hover: #3d5e5b;
+
+  /* Texto */
+  --color-text: #2c3e3c;           /* En lugar de negro puro, un verde-gris muy oscuro */
+  --color-text-secondary: #5e7a77;
+  --color-text-muted: #95aaa8;
   
-  --bg-color: #f0fdfa; /* Fondo muy suave teal/mint */
-  --surface-color: #ffffff; /* Tarjetas blancas inmaculadas */
+  /* Bordes y divisores finos */
+  --color-border: #e2e8e7;
+  --color-border-focus: #578a85;
+
+  /* Feedback */
+  --color-error: #c96a6a;          
+  --color-error-bg: #fdf5f5;
+  --color-error-border: #f5dcdc;
+  --color-success: #679469;        
+  --color-success-bg: #f4fbf5;
+  --color-success-border: #d4e8d6;
+
+  /* Tipografía - Inter (Precisión) y Outfit (Elegancia geométrica) */
+  --font-family: 'Inter', -apple-system, sans-serif;
+  --font-heading: 'Outfit', -apple-system, sans-serif;
   
-  --text-main: #1e293b; /* Texto formal gris oscuro */
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --error-color: #ef4444;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 15px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+
+  /* Espaciado sistemático (Escala 4pt) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radios - Más sobrios y empresariales, no tan redondos */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Sombras — Premium Glassmorphism difuso */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-float: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.01);
+
+  /* Transición global */
+  --transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* {
+/* --- Reset --- */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-main);
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
   min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* --- Scrollbar sutil --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ============================================================
+   UI Components (Botones, Tarjetas, Formularios, Tablas)
+   ============================================================ */
+
+/* --- Layout de Página --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-8) var(--space-10) var(--space-6);
+}
+
+.page-header__title {
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.page-header__desc {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.content-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  margin: 0 var(--space-10) var(--space-10);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+/* --- Botones --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  gap: 8px;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 10px rgba(17, 94, 89, 0.2);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(17, 94, 89, 0.3);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn--outline:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-muted);
+}
+
+/* --- Formularios --- */
+.form {
   display: flex;
   flex-direction: column;
+  gap: var(--space-6);
+}
+
+.form__row {
+  display: flex;
+  gap: var(--space-6);
+}
+.form__row > * {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.field__input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: all var(--transition);
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.field__input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);
+}
+
+.field__hint-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* --- Tablas --- */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--color-bg);
+  padding: var(--space-4) var(--space-5);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table td {
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: var(--color-surface-hover);
+}
+
+/* --- Alertas --- */
+.alert {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.alert--error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
+}
+
+.alert--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
 }

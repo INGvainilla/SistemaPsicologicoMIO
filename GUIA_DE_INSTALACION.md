@@ -14,6 +14,24 @@ Antes de empezar, asegúrate de tener instalados los siguientes programas:
 
 ---
 
+## 📥 0.5 Descargar el Código (Git)
+Si eres un desarrollador nuevo en el equipo:
+1. Abre tu terminal.
+2. Ejecuta el comando para clonar:
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd SIGEPSI
+   ```
+
+**💡 Nota para desarrolladores actuales (Ej. Equipo Móvil):**
+Si ya tienes el repositorio clonado en tu máquina, simplemente actualiza tu rama a la última versión ejecutando:
+```bash
+git pull
+```
+*(Asegúrate de reemplazar `<URL_DEL_REPOSITORIO>` con el enlace real de GitHub/GitLab del proyecto).*
+
+---
+
 ## 🐘 1. Preparar la Base de Datos (pgAdmin)
 1. Abre tu pgAdmin y conéctate a tu servidor local.
 2. Haz clic derecho en *Databases* -> *Create* -> *Database...*
@@ -32,6 +50,11 @@ cd BACKEND
 **A. Variables de Entorno:**
 1. Haz una copia del archivo `.env.example` y renómbralo a `.env`.
 2. Ábrelo y cambia el valor de `TU_CONTRASEÑA_DE_POSTGRES` por la contraseña que usas en tu pgAdmin.
+3. **Configuración de Correos (Sprint 0):** Para que el sistema de "Olvidar Contraseña" te envíe correos reales, añade estas líneas al final de tu `.env` (debes generar una "Contraseña de aplicación" desde la Seguridad de tu cuenta de Google, NO uses tu contraseña personal):
+   ```env
+   EMAIL_HOST_USER=tu_correo@gmail.com
+   EMAIL_HOST_PASSWORD=tu_contraseña_de_aplicacion_de_16_digitos
+   ```
 
 **B. Entorno Virtual y Dependencias:**
 Crea una "burbuja" de Python para instalar las librerías del proyecto sin afectar tu PC:
@@ -59,6 +82,11 @@ python manage.py migrate_schemas --shared
 Ahora, crea el usuario Administrador y la Clínica global ejecutando:
 ```bash
 python manage.py init_system
+```
+
+Luego, carga los datos del Sprint 0 (Roles, Permisos y configuraciones):
+```bash
+python -c "exec(open('crear_datos_prueba.py', encoding='utf-8').read())"
 ```
 
 **D. Iniciar el Servidor:**
@@ -93,8 +121,11 @@ npm start
 Con el Backend y el Frontend corriendo simultáneamente:
 1. Abre tu navegador web favorito.
 2. Ingresa a la URL: **[http://localhost:4200/login](http://localhost:4200/login)**
-3. Inicia sesión con las credenciales que se generaron en el paso de inicialización:
+3. Inicia sesión con las credenciales maestras:
    *   **Correo:** `admin@sigepsi.com`
-   *   **Contraseña:** `admin123`
+   *   **Contraseña:** `Sigepsi2026!`
+
+4. **Probar el Flujo de "Olvidar Contraseña":** 
+   Ve a la pantalla de login, presiona el botón de recuperar contraseña e ingresa tu correo configurado. Recibirás un email real con un botón de acceso seguro que te redirigirá automáticamente a nuestra nueva interfaz de **"Crear Nueva Contraseña"**.
 
 ¡Listo! Si ves el mensaje de acceso exitoso, significa que el entorno Multi-Tenant, la API, JWT, la base de datos y la vista gráfica están perfectamente conectados.

@@ -39,3 +39,10 @@ class ConfiguracionCentro(models.Model):
     contact_phone = models.CharField(max_length=20, blank=True, null=True)
     logo_url = models.CharField(max_length=255, blank=True, null=True)
     primary_color = models.CharField(max_length=7, default='#FFFFFF')
+
+class TokenRecuperacion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='tokens_recuperacion')
+    token = models.CharField(max_length=255, unique=True)
+    fecha_expiracion = models.DateTimeField()
+    usado = models.BooleanField(default=False)
