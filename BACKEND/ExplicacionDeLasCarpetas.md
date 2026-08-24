@@ -13,7 +13,7 @@ Esta es la carpeta principal de configuración de todo el backend.
 ## 2. 📁 Carpeta `apps/` (Módulos del Sistema)
 Esta carpeta centraliza todos los módulos del sistema (los "Paquetes" o Casos de Uso). Mantener las aplicaciones aquí adentro asegura un directorio raíz limpio. Actualmente contiene:
 *   **`tenants/`**: Gestiona la arquitectura **Multi-Tenant**. Incluye los modelos `Centro` (que representa a cada clínica) y `Dominio`. Se encarga de aislar la información para que cada centro vea únicamente su propia base de datos, manteniendo un esquema `public` para la administración general.
-*   **`users/`**: Administra la seguridad, autenticación y gestión de usuarios. Aquí se ha sobrescrito el modelo nativo de Django para utilizar el correo electrónico como identificador en lugar de un nombre de usuario. También contiene los modelos de `Rol` y `Permiso`, además del archivo `urls.py` encargado de procesar el inicio de sesión (`/auth/login/`) para emitir los tokens JWT.
+*   **`users/`**: Administra la seguridad, autenticación y gestión de usuarios. Aquí se ha sobrescrito el modelo nativo de Django para utilizar el correo electrónico como identificador en lugar de un nombre de usuario. También contiene los modelos de `Rol` y `Permiso`, además del archivo `urls.py` encargado de procesar el inicio de sesión (`/auth/login/`) para emitir los tokens JWT, el registro de pacientes desde la app móvil (`/auth/register/`, CU27) y el perfil del usuario autenticado (`/me/`).
 
 ## 3. 📄 Archivo `manage.py`
 Es el script de utilidad principal de Django. Se utiliza desde la línea de comandos para realizar tareas administrativas, tales como iniciar el servidor de desarrollo (`runserver`), procesar migraciones (`makemigrations`, `migrate`), o crear superusuarios.

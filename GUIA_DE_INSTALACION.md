@@ -11,6 +11,7 @@ Antes de empezar, asegúrate de tener instalados los siguientes programas:
 2. **Node.js** (versión 18 o superior)
 3. **Angular CLI** (instálalo globalmente con: `npm install -g @angular/cli`)
 4. **PostgreSQL / pgAdmin** (versión 14 o superior)
+5. **Flutter SDK** (solo si vas a correr la app móvil — ver sección 4)
 
 ---
 
@@ -117,7 +118,61 @@ npm start
 
 ---
 
-## 🧪 4. Probar el Sistema
+## 📱 4. Levantar el MOBILE (Flutter)
+
+El proyecto móvil puede ejecutarse tanto en dispositivos físicos/emuladores como directamente en tu navegador web (**sin necesidad de conectar un celular ni configurar emuladores**). Esto es ideal para pruebas rápidas de interfaz y de conexión con la base de datos local.
+
+Abre **una nueva pestaña en tu terminal** (deja Django corriendo) y dirígete a la carpeta `MOBILE`:
+```bash
+cd MOBILE
+```
+
+Instala las dependencias de Flutter:
+```bash
+flutter pub get
+```
+
+### 💻 Opción A: Pruebas rápidas en el Navegador Web (Recomendado sin celular)
+Puedes ejecutar la aplicación móvil directamente en Chrome o Edge instalados en tu PC:
+
+1. Corre la aplicación indicando la dirección de la clínica local:
+   ```bash
+   flutter run --dart-define=API_BASE_URL=http://sanamente.localhost:8000/api
+   ```
+2. La consola te mostrará una lista de dispositivos disponibles. Elige el número de **Chrome** o **Edge**.
+3. El navegador se abrirá mostrando la aplicación móvil. Al estar en la misma computadora, las solicitudes a `sanamente.localhost` se comunicarán directamente con el Backend de Django sin configuraciones adicionales.
+
+### 📱 Opción B: Ejecutar en Emulador o Dispositivo Físico
+Si deseas ver cómo funciona en un entorno móvil real:
+- **Emulador Android:** `sanamente.localhost` no resuelve directamente dentro de la red del emulador. Debes redireccionar el puerto ejecutando `adb reverse tcp:8000 tcp:8000` en tu consola, o correr la aplicación apuntando a la IP especial del emulador:
+  ```bash
+  flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api
+  ```
+- **Simulador iOS (Mac):** Resuelve `sanamente.localhost` por defecto:
+  ```bash
+  flutter run --dart-define=API_BASE_URL=http://sanamente.localhost:8000/api
+  ```
+
+---
+
+### 🧪 4.5 Pruebas Locales (Flujo de "Olvidó su contraseña")
+Para probar el restablecimiento de contraseñas de manera local sin servidores de correo externos:
+1. Abre tu navegador con la aplicación móvil (Opción A).
+2. Ve a *"Olvidó su contraseña"* e ingresa un correo de prueba registrado (por ejemplo: `condoridiaz2005@gmail.com`).
+3. Presiona *"Enviar código"*.
+4. **Obtener el código:** Ve a la terminal donde dejaste corriendo el backend de Django (`python manage.py runserver`). Verás el texto del correo electrónico impreso en la consola con una línea como esta:
+   `Tu código de verificación (válido por 5 minutos): ZTQ4NDZmNDUt...`
+5. **Copia el código completo** (si se divide en dos líneas debido al ancho de la terminal, únelas eliminando el signo `=` al final de la primera línea y cualquier espacio en blanco).
+6. Pega el código en la pantalla de verificación y avanza para establecer tu nueva contraseña.
+
+Para correr los tests unitarios y de integración de la app móvil:
+```bash
+flutter test
+```
+
+---
+
+## 🧪 5. Probar el Sistema
 Con el Backend y el Frontend corriendo simultáneamente:
 1. Abre tu navegador web favorito.
 2. Ingresa a la URL: **[http://localhost:4200/login](http://localhost:4200/login)**

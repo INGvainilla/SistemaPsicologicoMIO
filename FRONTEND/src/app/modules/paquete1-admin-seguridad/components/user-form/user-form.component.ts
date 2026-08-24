@@ -1,8 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../../../services/user.service';
 import { RoleService } from '../../../../services/role.service';
+
+export function securePasswordValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+    const errors: any = {};
+    if (value.length < 8) errors.minLengthError = true;
+    if (!/[A-Z]/.test(value)) errors.missingUppercase = true;
+    if (!/[a-z]/.test(value)) errors.missingLowercase = true;
+    if (!/\d/.test(value)) errors.missingNumber = true;
+    if (!/[^a-zA-Z0-9]/.test(value)) errors.missingSpecialChar = true;
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+}
 
 @Component({
   selector: 'app-user-form',
@@ -26,7 +40,7 @@ export class UserFormComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required, securePasswordValidator()]],
       role_id: ['', Validators.required],
       is_active: [true]
     });
@@ -66,5 +80,30 @@ export class UserFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  get hasMinLength(): boolean {
+    const val = this.userForm.get('password')?.value || '';
+    return val.length >= 8;
+  }
+
+  get hasUppercase(): boolean {
+    const val = this.userForm.get('password')?.value || '';
+    return /[A-Z]/.test(val);
+  }
+
+  get hasLowercase(): boolean {
+    const val = this.userForm.get('password')?.value || '';
+    return /[a-z]/.test(val);
+  }
+
+  get hasNumber(): boolean {
+    const val = this.userForm.get('password')?.value || '';
+    return /\d/.test(val);
+  }
+
+  get hasSpecialChar(): boolean {
+    const val = this.userForm.get('password')?.value || '';
+    return /[^a-zA-Z0-9]/.test(val);
   }
 }

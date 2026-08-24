@@ -1,7 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
+
+export function securePasswordValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+    const errors: any = {};
+    if (value.length < 8) errors.minLengthError = true;
+    if (!/[A-Z]/.test(value)) errors.missingUppercase = true;
+    if (!/[a-z]/.test(value)) errors.missingLowercase = true;
+    if (!/\d/.test(value)) errors.missingNumber = true;
+    if (!/[^a-zA-Z0-9]/.test(value)) errors.missingSpecialChar = true;
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+}
 
 @Component({
   selector: 'app-password-reset-confirm',
@@ -25,7 +39,7 @@ export class PasswordResetConfirmComponent implements OnInit {
     private authService: AuthService
   ) {
     this.confirmForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      newPassword: ['', [Validators.required, securePasswordValidator()]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
   }
@@ -71,5 +85,30 @@ export class PasswordResetConfirmComponent implements OnInit {
         }
       });
     }
+  }
+
+  get hasMinLength(): boolean {
+    const val = this.confirmForm.get('newPassword')?.value || '';
+    return val.length >= 8;
+  }
+
+  get hasUppercase(): boolean {
+    const val = this.confirmForm.get('newPassword')?.value || '';
+    return /[A-Z]/.test(val);
+  }
+
+  get hasLowercase(): boolean {
+    const val = this.confirmForm.get('newPassword')?.value || '';
+    return /[a-z]/.test(val);
+  }
+
+  get hasNumber(): boolean {
+    const val = this.confirmForm.get('newPassword')?.value || '';
+    return /\d/.test(val);
+  }
+
+  get hasSpecialChar(): boolean {
+    const val = this.confirmForm.get('newPassword')?.value || '';
+    return /[^a-zA-Z0-9]/.test(val);
   }
 }

@@ -1,6 +1,20 @@
+import re
 from rest_framework import serializers
 from .models import Usuario, Rol, Permiso
 from django.contrib.auth.hashers import make_password
+
+def validate_secure_password(value):
+    if len(value) < 8:
+        raise serializers.ValidationError('La contraseña debe tener al menos 8 caracteres.')
+    if not re.search(r'[A-Z]', value):
+        raise serializers.ValidationError('La contraseña debe contener al menos una letra mayúscula.')
+    if not re.search(r'[a-z]', value):
+        raise serializers.ValidationError('La contraseña debe contener al menos una letra minúscula.')
+    if not re.search(r'\d', value):
+        raise serializers.ValidationError('La contraseña debe contener al menos un número.')
+    if not re.search(r'[^a-zA-Z0-9]', value):
+        raise serializers.ValidationError('La contraseña debe contener al menos un carácter especial (ej. !, @, #, $, etc.).')
+    return value
 
 class PermisoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +40,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
-    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
+    password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'}, validators=[validate_secure_password])
 
     class Meta:
         model = Usuario
@@ -66,4 +80,101 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
-    new_password = serializers.CharField(write_only=True, min_length=8)
+    new_password = serializers.CharField(write_only=True, validators=[validate_secure_password])
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from .tokens import resolve_reset_code
+
+PACIENTE_ROLE_NAME = 'Paciente'
+
+class RegisterSerializer(serializers.ModelSerializer):
+    """CU27: registro de pacientes desde la aplicación móvil."""
+    email = serializers.EmailField(validators=[])
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_secure_password])
+    phone = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Usuario
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone']
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if Usuario.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                'Ya existe una cuenta registrada con este correo electrónico.'
+            )
+        return value
+
+    def validate_password(self, value):
+        validate_secure_password(value)
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
+        return value
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        email = validated_data['email']
+        user = Usuario.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            phone=validated_data.get('phone', ''),
+        )
+        rol_paciente, _ = Rol.objects.get_or_create(
+            name=PACIENTE_ROLE_NAME,
+            defaults={'description': 'Paciente registrado desde la aplicación móvil'},
+        )
+        user.roles.add(rol_paciente)
+        return user
+
+class PasswordResetVerifySerializer(serializers.Serializer):
+    """HU-10b (paso intermedio): confirma que el código todavía es válido."""
+    code = serializers.CharField()
+
+    def validate_code(self, value):
+        if resolve_reset_code(value) is None:
+            raise serializers.ValidationError(
+                'El código no es válido o ya expiró. Solicita uno nuevo.'
+            )
+        return value
+
+class MobilePasswordResetConfirmSerializer(serializers.Serializer):
+    """HU-10b/c: confirmación con el código enviado por correo para móvil."""
+    code = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, validators=[validate_secure_password])
+
+    def validate_new_password(self, value):
+        validate_secure_password(value)
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
+        return value
+
+    def validate(self, attrs):
+        user = resolve_reset_code(attrs['code'])
+        if user is None:
+            raise serializers.ValidationError(
+                {'code': 'El código no es válido o ya expiró. Solicita uno nuevo.'}
+            )
+        attrs['user'] = user
+        return attrs
+
+    def save(self):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data['new_password'])
+        user.save(update_fields=['password'])
+        return user
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    roles = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+
+    class Meta:
+        model = Usuario
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'roles']
+        read_only_fields = fields

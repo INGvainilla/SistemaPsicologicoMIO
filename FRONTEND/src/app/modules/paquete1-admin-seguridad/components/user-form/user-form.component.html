@@ -28,7 +28,34 @@
       <div class="field">
         <label for="password" class="field__label">Contraseña temporal</label>
         <input type="password" id="password" formControlName="password" class="field__input" placeholder="••••••••">
-        <span class="field__hint-text">Mínimo 8 caracteres. El usuario podrá cambiarla luego.</span>
+        <span class="field__hint-text" style="font-weight: bold;">El usuario podrá cambiarla luego. Requisitos de seguridad:</span>
+        <ul class="password-requirements" style="margin: 6px 0 0 0; padding: 0; font-size: 13px; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+          <li [style.color]="hasMinLength ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
+            <svg *ngIf="hasMinLength" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span *ngIf="!hasMinLength" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
+            <span>Mínimo 8 caracteres</span>
+          </li>
+          <li [style.color]="hasUppercase ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
+            <svg *ngIf="hasUppercase" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span *ngIf="!hasUppercase" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
+            <span>Letra mayúscula (A-Z)</span>
+          </li>
+          <li [style.color]="hasLowercase ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
+            <svg *ngIf="hasLowercase" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span *ngIf="!hasLowercase" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
+            <span>Letra minúscula (a-z)</span>
+          </li>
+          <li [style.color]="hasNumber ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
+            <svg *ngIf="hasNumber" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span *ngIf="!hasNumber" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
+            <span>Al menos un número (0-9)</span>
+          </li>
+          <li [style.color]="hasSpecialChar ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
+            <svg *ngIf="hasSpecialChar" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span *ngIf="!hasSpecialChar" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
+            <span>Un carácter especial (ej. !, &#64;, #, $, etc.)</span>
+          </li>
+        </ul>
       </div>
     </div>
 

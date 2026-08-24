@@ -142,6 +142,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True # Development only
 
+# HU-10 / CU27 / RF-31: recuperación de contraseña. Por defecto imprime el
+# correo en la consola (útil en desarrollo sin credenciales SMTP reales);
+# en producción, configurar EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD
+# en el .env (SendGrid/Mailgun) y cambiar EMAIL_BACKEND a smtp.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@sigepsi.com')
+
+# Token de recuperación válido por 5 minutos (criterio de aceptación HU-10a).
+PASSWORD_RESET_TIMEOUT = 60 * 5
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

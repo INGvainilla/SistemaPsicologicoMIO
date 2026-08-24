@@ -24,7 +24,11 @@ class Command(BaseCommand):
         
         with schema_context('public'):
             if not User.objects.filter(email='admin@sigepsi.com').exists():
-                User.objects.create_superuser('admin@sigepsi.com', 'admin123')
+                User.objects.create_superuser(
+                    username='admin@sigepsi.com',
+                    email='admin@sigepsi.com',
+                    password='admin123',
+                )
                 self.stdout.write(self.style.SUCCESS('Administrador global creado: admin@sigepsi.com / admin123'))
 
         # ---------------------------------------------------------
@@ -41,8 +45,8 @@ class Command(BaseCommand):
         # Poblar datos DENTRO de la clínica de prueba
         with schema_context('clinica_demo'):
             # Crear Permisos Básicos
-            permiso_leer_citas, _ = Permiso.objects.get_or_create(name='Ver Citas', code='read_citas')
-            permiso_editar_exp, _ = Permiso.objects.get_or_create(name='Editar Expediente', code='edit_expediente')
+            permiso_leer_citas, _ = Permiso.objects.get_or_create(name='Ver Citas', codename='read_citas')
+            permiso_editar_exp, _ = Permiso.objects.get_or_create(name='Editar Expediente', codename='edit_expediente')
             
             # Crear Roles
             rol_psicologo, _ = Rol.objects.get_or_create(name='Psicólogo', description='Personal de salud')
@@ -54,6 +58,7 @@ class Command(BaseCommand):
             # Crear Usuario Psicólogo
             if not User.objects.filter(email='psicologo@sanamente.com').exists():
                 user_psico = User.objects.create_user(
+                    username='psicologo@sanamente.com',
                     email='psicologo@sanamente.com',
                     password='password123',
                     first_name='Dr. Carlos',
@@ -65,6 +70,7 @@ class Command(BaseCommand):
             # Crear Usuario Paciente
             if not User.objects.filter(email='paciente@sanamente.com').exists():
                 user_pac = User.objects.create_user(
+                    username='paciente@sanamente.com',
                     email='paciente@sanamente.com',
                     password='password123',
                     first_name='Ana',

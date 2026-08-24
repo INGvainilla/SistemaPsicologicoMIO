@@ -6,7 +6,7 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8000/api/users/auth';
+  private apiUrl = 'http://sanamente.localhost:8000/api/users/auth';
   private tokenKey = 'sigepsi_token';
 
   constructor(private http: HttpClient) { }
@@ -42,6 +42,10 @@ export class AuthService {
       token,
       new_password: newPassword
     });
+  }
+
+  verifyPasswordResetCode(code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/password-reset-verify/`, { code });
   }
 
   getAuthHeaders(): HttpHeaders {
