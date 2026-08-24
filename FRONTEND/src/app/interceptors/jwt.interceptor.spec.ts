@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { HttpInterceptorFn } from '@angular/common/http';
 
@@ -8,7 +9,7 @@ describe('jwtInterceptor', () => {
     TestBed.runInInjectionContext(() => jwtInterceptor(req, next));
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
   });
 
   it('should be created', () => {

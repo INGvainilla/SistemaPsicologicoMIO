@@ -1,3 +1,5 @@
+import { ReactiveFormsModule } from '@angular/forms';
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UserFormComponent } from './user-form.component';
@@ -8,6 +10,8 @@ describe('UserFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [ReactiveFormsModule],
+      providers: [provideHttpClient()],
       declarations: [UserFormComponent]
     })
     .compileComponents();

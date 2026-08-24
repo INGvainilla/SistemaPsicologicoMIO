@@ -40,7 +40,7 @@ class RegisterAndAuthTests(TenantTestCase):
     def _register_payload(self, **overrides):
         payload = {
             'email': 'paciente.nuevo@test.com',
-            'password': 'ClaveSegura123',
+            'password': 'ClaveSegura123@',
             'first_name': 'Nuevo',
             'last_name': 'Paciente',
             'phone': '999999999',
@@ -90,7 +90,7 @@ class RegisterAndAuthTests(TenantTestCase):
 
         login_response = self._post(
             LOGIN_URL,
-            {'email': 'paciente.chain@test.com', 'password': 'ClaveSegura123'},
+            {'email': 'paciente.chain@test.com', 'password': 'ClaveSegura123@'},
         )
         self.assertEqual(login_response.status_code, 200)
         access_token = login_response.json()['access']
@@ -115,7 +115,7 @@ class PasswordResetTests(TenantTestCase):
         self.user = Usuario.objects.create_user(
             username='paciente@sanamente.com',
             email='paciente@sanamente.com',
-            password='ClaveVieja123',
+            password='ClaveVieja123@',
             first_name='Ana',
         )
 
@@ -145,7 +145,7 @@ class PasswordResetTests(TenantTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('ClaveVieja123'))  # sin cambios
+        self.assertTrue(self.user.check_password('ClaveVieja123@'))  # sin cambios
 
     def test_verify_with_invalid_code_returns_clean_400(self):
         response = self._post(PASSWORD_RESET_VERIFY_URL, {'code': 'codigo-invalido'})
@@ -161,7 +161,7 @@ class PasswordResetTests(TenantTestCase):
 
         confirm_response = self._post(
             PASSWORD_RESET_CONFIRM_URL,
-            {'code': code, 'new_password': 'ClaveNueva456'},
+            {'code': code, 'new_password': 'ClaveNueva456@'},
         )
         self.assertEqual(confirm_response.status_code, 200)
 
@@ -170,23 +170,23 @@ class PasswordResetTests(TenantTestCase):
 
         response = self._post(
             PASSWORD_RESET_CONFIRM_URL,
-            {'code': code, 'new_password': 'ClaveNueva456'},
+            {'code': code, 'new_password': 'ClaveNueva456@'},
         )
 
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('ClaveNueva456'))
+        self.assertTrue(self.user.check_password('ClaveNueva456@'))
 
         login_response = self._post(
             LOGIN_URL,
-            {'email': 'paciente@sanamente.com', 'password': 'ClaveNueva456'},
+            {'email': 'paciente@sanamente.com', 'password': 'ClaveNueva456@'},
         )
         self.assertEqual(login_response.status_code, 200)
 
     def test_confirm_with_invalid_code_returns_clean_400(self):
         response = self._post(
             PASSWORD_RESET_CONFIRM_URL,
-            {'code': 'codigo-invalido', 'new_password': 'ClaveNueva456'},
+            {'code': 'codigo-invalido', 'new_password': 'ClaveNueva456@'},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -194,11 +194,11 @@ class PasswordResetTests(TenantTestCase):
 
     def test_code_cannot_be_reused_after_password_already_changed(self):
         code = make_reset_code(self.user)
-        self._post(PASSWORD_RESET_CONFIRM_URL, {'code': code, 'new_password': 'ClaveNueva456'})
+        self._post(PASSWORD_RESET_CONFIRM_URL, {'code': code, 'new_password': 'ClaveNueva456@'})
 
         reused_response = self._post(
             PASSWORD_RESET_CONFIRM_URL,
-            {'code': code, 'new_password': 'OtraClave789'},
+            {'code': code, 'new_password': 'OtraClave789@'},
         )
 
         self.assertEqual(reused_response.status_code, 400)
