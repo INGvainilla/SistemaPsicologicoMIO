@@ -28,17 +28,12 @@ urlpatterns = [
     path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/register/', RegisterView.as_view(), name='register'),
-    path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
-    path(
-        'auth/password-reset-verify/',
-        PasswordResetVerifyView.as_view(),
-        name='password_reset_verify',
-    ),
-    path(
-        'auth/password-reset-confirm/',
-        PasswordResetConfirmView.as_view(),
-        name='password_reset_confirm',
-    ),
+    
+    # Endpoints directos para compatibilidad web y móvil
+    path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password_reset_direct'),
+    path('auth/password-reset-verify/', PasswordResetVerifyView.as_view(), name='password_reset_verify'),
+    path('auth/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm_direct'),
+    
     path('me/', MeView.as_view(), name='me'),
     path('', include(router.urls)),
 ]

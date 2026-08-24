@@ -11,6 +11,43 @@
       <p class="auth-subtitle">Ingresa a tu cuenta para continuar</p>
     </div>
 
+    <!-- Cuentas de Acceso Rápido de Prueba -->
+    <div style="background: var(--color-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--color-border); margin-bottom: 20px;">
+      <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-text-secondary); display: block; margin-bottom: 8px;">
+        Acceso rápido (Cuentas de prueba):
+      </span>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <button 
+          type="button" 
+          (click)="fillCredentials('admin@sigepsi.com', 'Sigepsi2026!')" 
+          class="btn btn--outline" 
+          style="padding: 4px 8px; font-size: 11px; border-radius: 6px;">
+          👑 SuperAdmin
+        </button>
+        <button 
+          type="button" 
+          (click)="fillCredentials('admin.sanamente@sigepsi.com', 'Sigepsi2026!')" 
+          class="btn btn--outline" 
+          style="padding: 4px 8px; font-size: 11px; border-radius: 6px;">
+          🏥 Admin Centro
+        </button>
+        <button 
+          type="button" 
+          (click)="fillCredentials('psicologo@sanamente.com', 'password123')" 
+          class="btn btn--outline" 
+          style="padding: 4px 8px; font-size: 11px; border-radius: 6px;">
+          🩺 Psicólogo
+        </button>
+        <button 
+          type="button" 
+          (click)="fillCredentials('paciente@sanamente.com', 'password123')" 
+          class="btn btn--outline" 
+          style="padding: 4px 8px; font-size: 11px; border-radius: 6px;">
+          👤 Paciente
+        </button>
+      </div>
+    </div>
+
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
       <!-- Mensaje de Error Global -->
       <div *ngIf="errorMessage" class="alert alert--error">

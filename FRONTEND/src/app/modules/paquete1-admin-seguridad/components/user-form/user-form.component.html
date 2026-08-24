@@ -1,87 +1,105 @@
 <header class="page-header">
   <div>
-    <h1 class="page-header__title">Nuevo Usuario</h1>
-    <p class="page-header__desc">Registre un nuevo miembro del equipo y asígnele un rol.</p>
+    <h1 class="page-header__title">{{ isEditMode ? 'Editar Usuario' : 'Nuevo Usuario' }}</h1>
+    <p class="page-header__desc">
+      {{ isEditMode ? 'Actualice la información del usuario, sus roles asignados o estado en la clínica.' : 'Complete el formulario para registrar un nuevo integrante o profesional en la clínica.' }}
+    </p>
   </div>
   <a routerLink="/users" class="btn btn--outline" style="text-decoration: none;">Cancelar</a>
 </header>
 
 <div class="content-card">
-  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="form">
+  <div *ngIf="successMessage" class="alert alert--success" style="margin-bottom: 20px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert--error" style="margin-bottom: 20px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" style="padding: 40px; text-align: center; color: var(--color-text-muted);">
+    Cargando información del usuario...
+  </div>
+
+  <form *ngIf="!isLoading" [formGroup]="userForm" (ngSubmit)="onSubmit()" class="form">
     
     <div class="form__row">
       <div class="field">
-        <label for="first_name" class="field__label">Nombre</label>
-        <input type="text" id="first_name" formControlName="first_name" class="field__input" placeholder="Ej: Juan">
+        <label for="first_name" class="field__label">Nombre(s) *</label>
+        <input type="text" id="first_name" formControlName="first_name" class="field__input" placeholder="Ej: Carlos">
       </div>
+
       <div class="field">
-        <label for="last_name" class="field__label">Apellido</label>
-        <input type="text" id="last_name" formControlName="last_name" class="field__input" placeholder="Ej: Pérez">
+        <label for="last_name" class="field__label">Apellido(s) *</label>
+        <input type="text" id="last_name" formControlName="last_name" class="field__input" placeholder="Ej: López Gómez">
       </div>
     </div>
 
     <div class="form__row">
       <div class="field">
-        <label for="email" class="field__label">Correo electrónico</label>
-        <input type="email" id="email" formControlName="email" class="field__input" placeholder="juan@ejemplo.com">
+        <label for="email" class="field__label">Correo Electrónico *</label>
+        <input type="email" id="email" formControlName="email" class="field__input" placeholder="ejemplo@sanamente.com">
       </div>
+
       <div class="field">
-        <label for="password" class="field__label">Contraseña temporal</label>
-        <input type="password" id="password" formControlName="password" class="field__input" placeholder="••••••••">
-        <span class="field__hint-text" style="font-weight: bold;">El usuario podrá cambiarla luego. Requisitos de seguridad:</span>
-        <ul class="password-requirements" style="margin: 6px 0 0 0; padding: 0; font-size: 13px; list-style: none; display: flex; flex-direction: column; gap: 6px;">
-          <li [style.color]="hasMinLength ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
-            <svg *ngIf="hasMinLength" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span *ngIf="!hasMinLength" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
-            <span>Mínimo 8 caracteres</span>
-          </li>
-          <li [style.color]="hasUppercase ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
-            <svg *ngIf="hasUppercase" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span *ngIf="!hasUppercase" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
-            <span>Letra mayúscula (A-Z)</span>
-          </li>
-          <li [style.color]="hasLowercase ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
-            <svg *ngIf="hasLowercase" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span *ngIf="!hasLowercase" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
-            <span>Letra minúscula (a-z)</span>
-          </li>
-          <li [style.color]="hasNumber ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
-            <svg *ngIf="hasNumber" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span *ngIf="!hasNumber" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
-            <span>Al menos un número (0-9)</span>
-          </li>
-          <li [style.color]="hasSpecialChar ? '#1e8a7e' : '#757575'" style="display: flex; align-items: center; gap: 8px;">
-            <svg *ngIf="hasSpecialChar" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span *ngIf="!hasSpecialChar" style="width: 14px; height: 14px; border: 2px solid #bdbdbd; border-radius: 50%; display: inline-block; flex-shrink: 0; box-sizing: border-box;"></span>
-            <span>Un carácter especial (ej. !, &#64;, #, $, etc.)</span>
-          </li>
-        </ul>
+        <label for="phone" class="field__label">Teléfono de Contacto</label>
+        <input type="tel" id="phone" formControlName="phone" class="field__input" placeholder="Ej: +591 70000000">
       </div>
     </div>
 
-    <div class="field">
-      <label for="role_id" class="field__label">Rol en el sistema</label>
-      <select id="role_id" formControlName="role_id" class="field__input" style="appearance: auto;">
-        <option value="" disabled selected>Seleccione un rol...</option>
-        <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-      </select>
+    <div class="form__row">
+      <div class="field">
+        <label for="role_id" class="field__label">Rol Asignado *</label>
+        <select id="role_id" formControlName="role_id" class="field__input">
+          <option value="" disabled selected>Seleccione un rol...</option>
+          <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
+        </select>
+        <span class="field__hint-text">Define los permisos y módulos que este usuario podrá visualizar.</span>
+      </div>
+
+      <div class="field" style="justify-content: center;">
+        <label class="field__label">Estado de la Cuenta</label>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+          <input type="checkbox" id="is_active" formControlName="is_active" style="width: 18px; height: 18px; accent-color: var(--color-primary);">
+          <label for="is_active" style="font-size: 14px; cursor: pointer;">Usuario Activo</label>
+        </div>
+      </div>
     </div>
 
-    <div class="field" style="flex-direction: row; align-items: center; gap: 8px;">
-      <input type="checkbox" id="is_active" formControlName="is_active" style="width: 18px; height: 18px; accent-color: var(--color-primary);">
-      <label for="is_active" class="field__label" style="margin-bottom: 0;">Usuario Activo</label>
+    <!-- Contraseña -->
+    <div class="field" style="margin-top: 8px;">
+      <label for="password" class="field__label">
+        {{ isEditMode ? 'Nueva Contraseña (dejar en blanco para conservar la actual)' : 'Contraseña de Acceso *' }}
+      </label>
+      <input type="password" id="password" formControlName="password" class="field__input" placeholder="••••••••">
+      
+      <div *ngIf="passwordControl?.value" style="margin-top: 8px; font-size: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px;">
+        <span [style.color]="hasMinLength ? 'var(--color-success)' : 'var(--color-text-muted)'">
+          {{ hasMinLength ? '✓' : '•' }} Mínimo 8 caracteres
+        </span>
+        <span [style.color]="hasUppercase ? 'var(--color-success)' : 'var(--color-text-muted)'">
+          {{ hasUppercase ? '✓' : '•' }} Una mayúscula
+        </span>
+        <span [style.color]="hasLowercase ? 'var(--color-success)' : 'var(--color-text-muted)'">
+          {{ hasLowercase ? '✓' : '•' }} Una minúscula
+        </span>
+        <span [style.color]="hasNumber ? 'var(--color-success)' : 'var(--color-text-muted)'">
+          {{ hasNumber ? '✓' : '•' }} Un número
+        </span>
+        <span [style.color]="hasSpecialChar ? 'var(--color-success)' : 'var(--color-text-muted)'">
+          {{ hasSpecialChar ? '✓' : '•' }} Un carácter especial (!&#64;#$)
+        </span>
+      </div>
     </div>
 
-    <div *ngIf="errorMessage" class="alert alert--error" style="margin-top: 16px;">
-      <svg viewBox="0 0 20 20" fill="currentColor" style="width:20px;height:20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      {{ errorMessage }}
-    </div>
-
-    <div class="form__actions">
-      <button type="submit" class="btn btn--primary" [disabled]="userForm.invalid || isLoading">
-        <span *ngIf="!isLoading">Guardar Usuario</span>
-        <span *ngIf="isLoading" class="btn__loader"></span>
+    <div class="form__actions" style="margin-top: 28px; display: flex; gap: 12px; align-items: center;">
+      <button type="submit" class="btn btn--primary" [disabled]="userForm.invalid || isSaving">
+        <span *ngIf="!isSaving">{{ isEditMode ? 'Guardar Cambios del Usuario' : 'Registrar Usuario' }}</span>
+        <span *ngIf="isSaving">Guardando...</span>
       </button>
+      <a routerLink="/users" class="btn btn--outline" style="text-decoration: none;">Cancelar</a>
     </div>
   </form>
 </div>

@@ -7,24 +7,37 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class RoleService {
-  private apiUrl = 'http://localhost:8000/api/users/roles/';
-  private permisosUrl = 'http://localhost:8000/api/users/permisos/';
-
   constructor(private http: HttpClient, private authService: AuthService) { }
 
-  getRoles(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl, { headers: this.authService.getAuthHeaders() });
+  private get apiUrl(): string {
+    return `${this.authService.getApiBaseUrl()}/users/roles/`;
   }
 
-  getRole(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}${id}/`, { headers: this.authService.getAuthHeaders() });
+  private get permisosUrl(): string {
+    return `${this.authService.getApiBaseUrl()}/users/permisos/`;
+  }
+
+  getRoles(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
+
+  getRole(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}${id}/`);
   }
 
   createRole(role: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, role, { headers: this.authService.getAuthHeaders() });
+    return this.http.post<any>(this.apiUrl, role);
+  }
+
+  updateRole(id: string, role: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}${id}/`, role);
+  }
+
+  deleteRole(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}${id}/`);
   }
 
   getPermisos(): Observable<any[]> {
-    return this.http.get<any[]>(this.permisosUrl, { headers: this.authService.getAuthHeaders() });
+    return this.http.get<any[]>(this.permisosUrl);
   }
 }

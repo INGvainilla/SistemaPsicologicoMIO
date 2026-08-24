@@ -30,6 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _fillCredentials(String email, String password) {
+    setState(() {
+      _emailController.text = email;
+      _passwordController.text = password;
+    });
+  }
+
   String? _validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Ingresa tu correo electrónico';
@@ -80,14 +87,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Gestión de citas, expedientes y seguimiento terapéutico',
                 features: [
                   'Acceso seguro a tus citas y tratamiento',
-                  'Privacidad y confidencialidad garantizada',
-                  'Seguimiento de tu proceso terapéutico',
+                  'Aislamiento Multi-Tenant y Seguridad RBAC',
+                  'Seguimiento clínico confidencial',
                 ],
               ),
               Transform.translate(
                 offset: const Offset(0, -24),
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -105,17 +112,79 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         Text(
-                          'Inicia sesión para continuar',
+                          'Ingresa a tu cuenta para continuar',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+
+                        // Botones de Acceso Rápido (Cuentas de prueba)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'ACCESO RÁPIDO (PRUEBAS):',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF64748B),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  _QuickLoginChip(
+                                    label: '👑 SuperAdmin',
+                                    onTap: () => _fillCredentials(
+                                      'admin@sigepsi.com',
+                                      'Sigepsi2026!',
+                                    ),
+                                  ),
+                                  _QuickLoginChip(
+                                    label: '🏥 Admin Centro',
+                                    onTap: () => _fillCredentials(
+                                      'admin.sanamente@sigepsi.com',
+                                      'Sigepsi2026!',
+                                    ),
+                                  ),
+                                  _QuickLoginChip(
+                                    label: '🩺 Psicólogo',
+                                    onTap: () => _fillCredentials(
+                                      'psicologo@sanamente.com',
+                                      'password123',
+                                    ),
+                                  ),
+                                  _QuickLoginChip(
+                                    label: '👤 Paciente',
+                                    onTap: () => _fillCredentials(
+                                      'paciente@sanamente.com',
+                                      'password123',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
                         AuthTextField(
                           controller: _emailController,
                           label: 'Correo electrónico',
@@ -144,38 +213,89 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         if (authProvider.status == AuthStatus.error &&
                             authProvider.errorMessage != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            authProvider.errorMessage!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              authProvider.errorMessage!,
+                              style: const TextStyle(
+                                color: Color(0xFFDC2626),
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         GradientButton(
                           label: 'Ingresar',
                           isLoading: isLoading,
                           onPressed: () => _submit(authProvider),
                         ),
-                        // El botón de registro se ocultó para el Sprint 0 (corresponde a sprints posteriores)
-                        // const SizedBox(height: 16),
-                        // Center(
-                        //   child: TextButton(
-                        //     onPressed: isLoading
-                        //         ? null
-                        //         : () => Navigator.of(
-                        //             context,
-                        //           ).pushNamed(RegisterScreen.routeName),
-                        //     child: const Text('¿No tienes cuenta? Regístrate'),
-                        //   ),
-                        // ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '¿No tienes una cuenta?',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
+                            TextButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () => Navigator.of(
+                                      context,
+                                    ).pushNamed(RegisterScreen.routeName),
+                              child: const Text(
+                                'Regístrate aquí',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E8A7E),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickLoginChip extends StatelessWidget {
+  const _QuickLoginChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF334155),
           ),
         ),
       ),

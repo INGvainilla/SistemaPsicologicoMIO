@@ -1,54 +1,89 @@
 <header class="page-header">
   <div>
-    <h1 class="page-header__title">Nuevo Rol</h1>
-    <p class="page-header__desc">Cree un rol personalizado y asigne permisos de acceso específicos.</p>
+    <h1 class="page-header__title">{{ isEditMode ? 'Editar Rol' : 'Nuevo Rol' }}</h1>
+    <p class="page-header__desc">
+      {{ isEditMode ? 'Modifique la configuración y los permisos de acceso asignados a este perfil.' : 'Cree un rol personalizado y asigne permisos de acceso específicos.' }}
+    </p>
   </div>
   <a routerLink="/roles" class="btn btn--outline" style="text-decoration: none;">Cancelar</a>
 </header>
 
 <div class="content-card">
-  <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="form">
+  <div *ngIf="successMessage" class="alert alert--success" style="margin-bottom: 20px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert--error" style="margin-bottom: 20px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" style="padding: 40px; text-align: center; color: var(--color-text-muted);">
+    Cargando información del rol...
+  </div>
+
+  <form *ngIf="!isLoading" [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="form">
     
     <div class="field">
-      <label for="name" class="field__label">Nombre del Rol</label>
-      <input type="text" id="name" formControlName="name" class="field__input" placeholder="Ej: Recepcionista Mañana">
+      <label for="name" class="field__label">Nombre del Rol *</label>
+      <input type="text" id="name" formControlName="name" class="field__input" placeholder="Ej: Recepcionista Mañana, Terapeuta Junior">
     </div>
 
     <div class="field">
-      <label for="description" class="field__label">Descripción</label>
-      <textarea id="description" formControlName="description" class="field__input" rows="3" placeholder="Breve descripción de las responsabilidades..."></textarea>
+      <label for="description" class="field__label">Descripción de Responsabilidades</label>
+      <textarea id="description" formControlName="description" class="field__input" rows="3" placeholder="Breve descripción de las funciones y alcance de este rol..."></textarea>
     </div>
 
     <div class="field" style="margin-top: 16px;">
-      <label class="field__label">Permisos de Acceso</label>
-      <p class="field__hint-text" style="margin-top: -4px; margin-bottom: 12px;">Seleccione las acciones que este rol podrá realizar dentro del sistema.</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+          <label class="field__label" style="font-size: 15px; font-weight: 600;">Permisos de Acceso Asignados ({{ selectedPermisos.size }} seleccionados)</label>
+          <p class="field__hint-text" style="margin-top: 2px;">Marque las capacidades y módulos habilitados para este perfil.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" (click)="selectAllPermissions()" class="btn btn--outline" style="padding: 4px 10px; font-size: 12px;">
+            Seleccionar todos
+          </button>
+          <button type="button" (click)="deselectAllPermissions()" class="btn btn--outline" style="padding: 4px 10px; font-size: 12px;">
+            Desmarcar todos
+          </button>
+        </div>
+      </div>
       
-      <div formArrayName="permisos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; background: var(--color-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--color-border);">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; background: var(--color-bg); padding: 18px; border-radius: 10px; border: 1px solid var(--color-border);">
         
-        <div *ngFor="let permiso of permisosFormArray.controls; let i = index" style="display: flex; align-items: flex-start; gap: 8px;">
-          <input type="checkbox" [formControlName]="i" [id]="'permiso_' + i" style="margin-top: 4px; width: 16px; height: 16px; accent-color: var(--color-primary);">
-          <label [for]="'permiso_' + i" style="font-size: 13px; color: var(--color-text); cursor: pointer; user-select: none;">
-            <strong>{{ permisosDisponibles[i].name }}</strong>
-            <div style="color: var(--color-text-muted); font-size: 11px; margin-top: 2px;">{{ permisosDisponibles[i].codename }}</div>
-          </label>
+        <div 
+          *ngFor="let perm of permisosDisponibles" 
+          (click)="togglePermission(perm.id)"
+          [style.borderColor]="isPermissionSelected(perm.id) ? 'var(--color-primary)' : 'var(--color-border)'"
+          [style.background]="isPermissionSelected(perm.id) ? 'var(--color-primary-bg)' : 'var(--color-surface)'"
+          style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 8px; border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition);">
+          
+          <input 
+            type="checkbox" 
+            [checked]="isPermissionSelected(perm.id)" 
+            (click)="$event.stopPropagation(); togglePermission(perm.id)"
+            style="margin-top: 2px; width: 18px; height: 18px; accent-color: var(--color-primary); cursor: pointer;">
+          
+          <div>
+            <strong style="font-size: 13px; color: var(--color-text); display: block;">{{ perm.name }}</strong>
+            <span style="color: var(--color-text-muted); font-size: 11px; font-family: monospace;">{{ perm.codename }}</span>
+          </div>
         </div>
         
-        <div *ngIf="permisosDisponibles.length === 0" style="color: var(--color-text-muted); font-size: 13px;">
-          Cargando permisos disponibles...
+        <div *ngIf="permisosDisponibles.length === 0" style="color: var(--color-text-muted); font-size: 13px; padding: 12px;">
+          No hay permisos registrados en el sistema.
         </div>
       </div>
     </div>
 
-    <div *ngIf="errorMessage" class="alert alert--error" style="margin-top: 16px;">
-      <svg viewBox="0 0 20 20" fill="currentColor" style="width:20px;height:20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      {{ errorMessage }}
-    </div>
-
-    <div class="form__actions" style="margin-top: 32px;">
-      <button type="submit" class="btn btn--primary" [disabled]="roleForm.invalid || isLoading">
-        <span *ngIf="!isLoading">Crear Rol</span>
-        <span *ngIf="isLoading" class="btn__loader"></span>
+    <div class="form__actions" style="margin-top: 28px; display: flex; gap: 12px; align-items: center;">
+      <button type="submit" class="btn btn--primary" [disabled]="roleForm.invalid || isSaving">
+        <span *ngIf="!isSaving">{{ isEditMode ? 'Guardar Cambios del Rol' : 'Crear Rol' }}</span>
+        <span *ngIf="isSaving">Guardando...</span>
       </button>
+      <a routerLink="/roles" class="btn btn--outline" style="text-decoration: none;">Cancelar</a>
     </div>
   </form>
 </div>

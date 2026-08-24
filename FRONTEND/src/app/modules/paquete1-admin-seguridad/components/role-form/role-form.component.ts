@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RoleService } from '../../../../services/role.service';
 
 @Component({
@@ -12,60 +12,136 @@ import { RoleService } from '../../../../services/role.service';
 export class RoleFormComponent implements OnInit {
   roleForm: FormGroup;
   permisosDisponibles: any[] = [];
+  selectedPermisos: Set<string> = new Set();
+  isEditMode = false;
+  roleId: string | null = null;
   isLoading = false;
+  isSaving = false;
   errorMessage = '';
+  successMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private roleService: RoleService,
+    private route: ActivatedRoute,
     private router: Router
   ) {
     this.roleForm = this.fb.group({
-      name: ['', Validators.required],
-      description: [''],
-      permisos: this.fb.array([])
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      description: ['']
     });
   }
 
   ngOnInit(): void {
-    this.loadPermisos();
+    this.roleId = this.route.snapshot.paramMap.get('id');
+    this.isEditMode = !!this.roleId;
+
+    this.loadInitialData();
   }
 
-  loadPermisos() {
+  loadInitialData(): void {
+    this.isLoading = true;
     this.roleService.getPermisos().subscribe({
-      next: (data) => {
-        this.permisosDisponibles = data;
-        const formArray = this.roleForm.get('permisos') as FormArray;
-        this.permisosDisponibles.forEach(() => formArray.push(new FormControl(false)));
+      next: (permisos) => {
+        this.permisosDisponibles = permisos;
+        
+        if (this.isEditMode && this.roleId) {
+          this.loadRoleForEdit(this.roleId);
+        } else {
+          this.isLoading = false;
+        }
       },
-      error: (err) => console.error('Error cargando permisos', err)
+      error: (err) => {
+        console.error('Error cargando permisos', err);
+        this.errorMessage = 'No se pudieron cargar los permisos del sistema.';
+        this.isLoading = false;
+      }
     });
   }
 
-  get permisosFormArray() {
-    return this.roleForm.get('permisos') as FormArray;
+  loadRoleForEdit(id: string): void {
+    this.roleService.getRole(id).subscribe({
+      next: (role) => {
+        this.roleForm.patchValue({
+          name: role.name,
+          description: role.description || ''
+        });
+
+        // Marcar los permisos asignados
+        this.selectedPermisos.clear();
+        if (Array.isArray(role.permisos)) {
+          role.permisos.forEach((pId: any) => this.selectedPermisos.add(pId));
+        } else if (Array.isArray(role.permisos_details)) {
+          role.permisos_details.forEach((p: any) => this.selectedPermisos.add(p.id));
+        }
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando rol para edición', err);
+        this.errorMessage = 'No se pudo cargar la información del rol seleccionado.';
+        this.isLoading = false;
+      }
+    });
   }
 
-  onSubmit() {
-    if (this.roleForm.valid) {
-      this.isLoading = true;
-      const formData = { ...this.roleForm.value };
-      
-      // Mapear los checkboxes (booleanos) a los IDs reales de los permisos
-      const selectedPermisosIds = this.roleForm.value.permisos
-        .map((checked: boolean, i: number) => checked ? this.permisosDisponibles[i].id : null)
-        .filter((v: any) => v !== null);
-      
-      formData.permisos = selectedPermisosIds;
+  togglePermission(permisoId: string): void {
+    if (this.selectedPermisos.has(permisoId)) {
+      this.selectedPermisos.delete(permisoId);
+    } else {
+      this.selectedPermisos.add(permisoId);
+    }
+  }
 
-      this.roleService.createRole(formData).subscribe({
+  isPermissionSelected(permisoId: string): boolean {
+    return this.selectedPermisos.has(permisoId);
+  }
+
+  selectAllPermissions(): void {
+    this.permisosDisponibles.forEach(p => this.selectedPermisos.add(p.id));
+  }
+
+  deselectAllPermissions(): void {
+    this.selectedPermisos.clear();
+  }
+
+  onSubmit(): void {
+    if (this.roleForm.invalid) {
+      this.roleForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSaving = true;
+    this.errorMessage = '';
+
+    const payload = {
+      name: this.roleForm.value.name.trim(),
+      description: this.roleForm.value.description?.trim() || '',
+      permisos: Array.from(this.selectedPermisos)
+    };
+
+    if (this.isEditMode && this.roleId) {
+      this.roleService.updateRole(this.roleId, payload).subscribe({
         next: () => {
-          this.isLoading = false;
-          this.router.navigate(['/roles']);
+          this.isSaving = false;
+          this.successMessage = 'Rol actualizado exitosamente.';
+          setTimeout(() => this.router.navigate(['/roles']), 1200);
         },
         error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = err.error?.name?.[0] || 'Error al crear el rol.';
+          this.isSaving = false;
+          this.errorMessage = err.error?.name?.[0] || err.error?.error || 'Error al actualizar el rol.';
+        }
+      });
+    } else {
+      this.roleService.createRole(payload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.successMessage = 'Rol creado exitosamente.';
+          setTimeout(() => this.router.navigate(['/roles']), 1200);
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.errorMessage = err.error?.name?.[0] || err.error?.error || 'Error al crear el rol.';
         }
       });
     }

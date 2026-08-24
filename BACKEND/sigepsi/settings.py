@@ -101,14 +101,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sigepsi.wsgi.application'
 
+# Configuración de Base de Datos PostgreSQL / Supabase
+db_sslmode = os.getenv('DB_SSLMODE', '').strip()
+db_options = {}
+if db_sslmode:
+    db_options['sslmode'] = db_sslmode
+elif os.getenv('DB_HOST', '') not in ['localhost', '127.0.0.1', '']:
+    # Supabase y proveedores en la nube requieren SSL obligatorio
+    db_options['sslmode'] = 'require'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': db_options,
     }
 }
 DATABASE_ROUTERS = (
@@ -146,13 +158,22 @@ CORS_ALLOW_ALL_ORIGINS = True # Development only
 # correo en la consola (útil en desarrollo sin credenciales SMTP reales);
 # en producción, configurar EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD
 # en el .env (SendGrid/Mailgun) y cambiar EMAIL_BACKEND a smtp.
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', '')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@sigepsi.com')
+# Recuperación de contraseña por correo SMTP (Gmail / Sendgrid)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', f'SIGEPSI <{EMAIL_HOST_USER}>')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST = ''
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    DEFAULT_FROM_EMAIL = 'no-reply@sigepsi.com'
 
 # Token de recuperación válido por 5 minutos (criterio de aceptación HU-10a).
 PASSWORD_RESET_TIMEOUT = 60 * 5
@@ -164,4 +185,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
+}
+
+# Caché en memoria local — evita consultas repetitivas a Supabase
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'sigepsi-cache',
+        'TIMEOUT': 10,  # 10 segundos por defecto
+    }
 }

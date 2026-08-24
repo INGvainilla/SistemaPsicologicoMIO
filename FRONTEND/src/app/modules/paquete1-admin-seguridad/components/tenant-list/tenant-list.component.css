@@ -1,0 +1,4 @@
+/* Estilos para el listado de tenants */
+:host {
+  display: block;
+}

@@ -6,9 +6,7 @@ import '../services/auth_service.dart';
 
 enum AuthStatus { idle, loading, authenticated, unauthenticated, error }
 
-/// CU02 — Estado de sesión expuesto a la UI. Traduce las operaciones de
-/// [AuthService] en un estado observable por las pantallas de
-/// login/registro/splash/home vía `provider`.
+/// CU02 — Estado de sesión expuesto a la UI.
 class AuthProvider extends ChangeNotifier {
   AuthProvider({AuthService? authService})
     : _authService = authService ?? AuthService();
@@ -34,7 +32,6 @@ class AuthProvider extends ChangeNotifier {
       currentUser = await _authService.fetchMe();
       status = AuthStatus.authenticated;
     } catch (_) {
-      // Token guardado ya no es válido (expiró, se revocó, etc.).
       await _authService.logout();
       status = AuthStatus.unauthenticated;
     }
@@ -63,6 +60,43 @@ class AuthProvider extends ChangeNotifier {
         phone: phone,
       ),
     );
+  }
+
+  Future<bool> updateProfile({
+    required String id,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    String? email,
+    String? password,
+  }) async {
+    status = AuthStatus.loading;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      currentUser = await _authService.updateProfile(
+        id: id,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        password: password,
+      );
+      status = AuthStatus.authenticated;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      errorMessage = e.message;
+      status = AuthStatus.error;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      errorMessage = 'Error al actualizar el perfil. Verifica tu conexión.';
+      status = AuthStatus.error;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> _runAuthAction(Future<Usuario> Function() action) async {

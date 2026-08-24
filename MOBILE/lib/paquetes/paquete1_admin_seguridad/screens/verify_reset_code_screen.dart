@@ -20,11 +20,11 @@ class VerifyResetCodeScreen extends StatefulWidget {
   const VerifyResetCodeScreen({
     super.key,
     required this.email,
-    PasswordResetService? service,
-  }) : _service = service;
+    this.service,
+  });
 
   final String email;
-  final PasswordResetService? _service;
+  final PasswordResetService? service;
 
   @override
   State<VerifyResetCodeScreen> createState() => _VerifyResetCodeScreenState();
@@ -34,7 +34,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _codeController = TextEditingController();
   late final PasswordResetService _service =
-      widget._service ?? PasswordResetService();
+      widget.service ?? PasswordResetService();
 
   bool _isLoading = false;
   String? _errorMessage;

@@ -1,0 +1,121 @@
+<header class="page-header">
+  <div>
+    <h1 class="page-header__title">Centros Psicológicos (Tenants)</h1>
+    <p class="page-header__desc">Administración y supervisión global de clínicas y esquemas independientes del sistema.</p>
+  </div>
+  <a routerLink="/tenants/new" class="btn btn--primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    Registrar Nuevo Centro
+  </a>
+</header>
+
+<!-- Resumen Rápido de Centros -->
+<div class="stats-grid" style="margin: 0 var(--space-10) var(--space-6); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+  <div class="stat-card" style="background: var(--color-surface); padding: 16px 20px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; align-items: center; gap: 16px;">
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--color-primary-bg); color: var(--color-primary); display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="width: 24px; height: 24px;"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg>
+    </div>
+    <div>
+      <div style="font-size: 24px; font-weight: 700; color: var(--color-text);">{{ tenants.length }}</div>
+      <div style="font-size: 13px; color: var(--color-text-secondary);">Total de Centros</div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="background: var(--color-surface); padding: 16px 20px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; align-items: center; gap: 16px;">
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--color-success-bg); color: var(--color-success); display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="width: 24px; height: 24px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    </div>
+    <div>
+      <div style="font-size: 24px; font-weight: 700; color: var(--color-text);">{{ totalActivos }}</div>
+      <div style="font-size: 13px; color: var(--color-text-secondary);">Centros Operativos</div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="background: var(--color-surface); padding: 16px 20px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; align-items: center; gap: 16px;">
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--color-error-bg); color: var(--color-error); display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="width: 24px; height: 24px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+    </div>
+    <div>
+      <div style="font-size: 24px; font-weight: 700; color: var(--color-text);">{{ totalInactivos }}</div>
+      <div style="font-size: 13px; color: var(--color-text-secondary);">Inactivos</div>
+    </div>
+  </div>
+</div>
+
+<div class="content-card">
+  <div *ngIf="successMessage" class="alert alert--success" style="margin-bottom: 16px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert--error" style="margin-bottom: 16px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    {{ errorMessage }}
+  </div>
+
+  <div class="table-container">
+    <div *ngIf="isLoading" style="padding: 40px; text-align: center; color: var(--color-text-muted);">
+      Cargando centros psicológicos...
+    </div>
+
+    <table class="data-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Centro Psicológico</th>
+          <th>Esquema (Schema)</th>
+          <th>Dominio Asignado</th>
+          <th>Usuarios Registrados</th>
+          <th>Estado</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="tenants.length === 0">
+          <td colspan="6" style="text-align: center; padding: 24px;">No hay centros registrados en el sistema.</td>
+        </tr>
+        <tr *ngFor="let tenant of tenants">
+          <td>
+            <div style="font-weight: 600; color: var(--color-text); font-size: 15px;">{{ tenant.name }}</div>
+            <div *ngIf="tenant.schema_name === 'public'" style="font-size: 11px; color: var(--color-primary); font-weight: 500;">
+              ⭐ Administración Central Global
+            </div>
+          </td>
+          <td>
+            <code style="background: var(--color-bg); padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid var(--color-border); font-family: monospace;">
+              {{ tenant.schema_name }}
+            </code>
+          </td>
+          <td>
+            <a [href]="'http://' + getPrimaryDomain(tenant)" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; color: var(--color-primary); text-decoration: underline; font-size: 13px;">
+              {{ getPrimaryDomain(tenant) }}
+              <svg viewBox="0 0 20 20" fill="currentColor" style="width: 14px; height: 14px;"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+            </a>
+          </td>
+          <td>
+            <span class="badge" style="background: var(--color-primary-bg); color: var(--color-primary); font-weight: 600; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+              {{ tenant.total_usuarios }} usuarios
+            </span>
+          </td>
+          <td>
+            <span class="badge" [style.background]="tenant.is_active ? 'var(--color-success-bg)' : 'var(--color-error-bg)'" [style.color]="tenant.is_active ? 'var(--color-success)' : 'var(--color-error)'" style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;">
+              {{ tenant.is_active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <button 
+              *ngIf="tenant.schema_name !== 'public'"
+              (click)="toggleActive(tenant)" 
+              class="btn btn--outline" 
+              style="padding: 6px 12px; font-size: 12px;"
+              [title]="tenant.is_active ? 'Desactivar Centro' : 'Activar Centro'">
+              {{ tenant.is_active ? 'Desactivar' : 'Activar' }}
+            </button>
+            <span *ngIf="tenant.schema_name === 'public'" style="color: var(--color-text-muted); font-size: 12px; font-style: italic;">
+              Protegido
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

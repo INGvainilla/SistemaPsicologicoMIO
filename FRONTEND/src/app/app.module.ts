@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { Paquete1AdminSeguridadModule } from './modules/paquete1-admin-seguridad/paquete1-admin-seguridad.module';
+import { jwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,9 @@ import { Paquete1AdminSeguridadModule } from './modules/paquete1-admin-seguridad
     AppRoutingModule,
     Paquete1AdminSeguridadModule
   ],
-  providers: [provideHttpClient()],
+  providers: [
+    provideHttpClient(withInterceptors([jwtInterceptor]))
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

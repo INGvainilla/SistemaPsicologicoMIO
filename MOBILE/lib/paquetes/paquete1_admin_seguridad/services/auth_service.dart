@@ -4,14 +4,7 @@ import '../../../core/storage/token_storage.dart';
 import '../models/auth_tokens.dart';
 import '../models/usuario.dart';
 
-/// CU02 — Gestionar inicio de sesión y autenticación (HU-01, HU-02, HU-09;
-/// en el móvil, backlog SP3-1..3). Encapsula la comunicación con
-/// `/api/users/auth/login/`, `/auth/register/`, `/auth/refresh/` y
-/// `/api/users/me/`.
-///
-/// La recuperación de contraseña (CU27) vive en
-/// `services/password_reset_service.dart` — son casos de uso distintos
-/// aunque comparten el mismo backend Django y el mismo paquete.
+/// CU02 — Gestionar inicio de sesión y autenticación (HU-01, HU-02, HU-09).
 class AuthService {
   AuthService({ApiClient? apiClient, TokenStorage? tokenStorage})
     : _apiClient = apiClient ?? ApiClient(),
@@ -20,8 +13,7 @@ class AuthService {
   final ApiClient _apiClient;
   final TokenStorage _tokenStorage;
 
-  /// Registra un nuevo paciente y deja la sesión iniciada (el backend
-  /// devuelve tokens listos para usar junto con el perfil creado).
+  /// Registra un nuevo paciente y deja la sesión iniciada.
   Future<Usuario> register({
     required String email,
     required String password,
@@ -30,14 +22,14 @@ class AuthService {
     String phone = '',
   }) async {
     final response = await _apiClient.post(ApiConfig.registerEndpoint, {
-      'email': email,
+      'email': email.trim().toLowerCase(),
       'password': password,
-      'first_name': firstName,
-      'last_name': lastName,
-      'phone': phone,
+      'first_name': firstName.trim(),
+      'last_name': lastName.trim(),
+      'phone': phone.trim(),
     });
 
-    final tokens = AuthTokens.fromJson(response);
+    final tokens = AuthTokens.fromJson(response as Map<String, dynamic>);
     await _tokenStorage.saveTokens(
       access: tokens.access,
       refresh: tokens.refresh,
@@ -45,19 +37,17 @@ class AuthService {
     return Usuario.fromJson(response['user'] as Map<String, dynamic>);
   }
 
-  /// Inicia sesión con credenciales existentes. El login solo devuelve
-  /// tokens (contrato de SimpleJWT), así que se completa con [fetchMe]
-  /// para obtener el perfil del usuario.
+  /// Inicia sesión con credenciales existentes.
   Future<Usuario> login({
     required String email,
     required String password,
   }) async {
     final response = await _apiClient.post(ApiConfig.loginEndpoint, {
-      'email': email,
+      'email': email.trim().toLowerCase(),
       'password': password,
     });
 
-    final tokens = AuthTokens.fromJson(response);
+    final tokens = AuthTokens.fromJson(response as Map<String, dynamic>);
     await _tokenStorage.saveTokens(
       access: tokens.access,
       refresh: tokens.refresh,
@@ -70,8 +60,109 @@ class AuthService {
       ApiConfig.meEndpoint,
       authenticated: true,
     );
-    return Usuario.fromJson(response);
+    return Usuario.fromJson(response as Map<String, dynamic>);
   }
+
+  /// Actualiza los datos del perfil del usuario y opcionalmente su contraseña.
+  Future<Usuario> updateProfile({
+    required String id,
+    required String firstName,
+    required String lastName,
+    String? phone,
+    String? email,
+    String? password,
+  }) async {
+    final Map<String, dynamic> body = {
+      'first_name': firstName.trim(),
+      'last_name': lastName.trim(),
+      'phone': (phone ?? '').trim(),
+    };
+    if (email != null && email.isNotEmpty) {
+      body['email'] = email.trim().toLowerCase();
+    }
+    if (password != null && password.isNotEmpty) {
+      body['password'] = password;
+    }
+
+    await _apiClient.put(
+      '/users/usuarios/$id/',
+      body,
+      authenticated: true,
+    );
+    return fetchMe();
+  }
+
+  // --- GESTIÓN DE USUARIOS ---
+
+  Future<List<dynamic>> fetchUsers({String? search, String? role}) async {
+    String path = '/users/usuarios/';
+    final List<String> params = [];
+    if (search != null && search.trim().isNotEmpty) {
+      params.add('search=${Uri.encodeComponent(search.trim())}');
+    }
+    if (role != null && role.trim().isNotEmpty && role != 'Todos') {
+      params.add('role=${Uri.encodeComponent(role.trim())}');
+    }
+    if (params.isNotEmpty) {
+      path += '?${params.join('&')}';
+    }
+
+    final response = await _apiClient.get(path, authenticated: true);
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<dynamic> createUser(Map<String, dynamic> userData) async {
+    return _apiClient.post('/users/usuarios/', userData, authenticated: true);
+  }
+
+  Future<dynamic> updateUser(String id, Map<String, dynamic> userData) async {
+    return _apiClient.put('/users/usuarios/$id/', userData, authenticated: true);
+  }
+
+  Future<dynamic> deleteUser(String id) async {
+    return _apiClient.delete('/users/usuarios/$id/', authenticated: true);
+  }
+
+  // --- GESTIÓN DE CENTROS (TENANTS) ---
+
+  Future<List<dynamic>> fetchTenants() async {
+    final response = await _apiClient.get('/tenants/', authenticated: true);
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<dynamic> createTenant(Map<String, dynamic> tenantData) async {
+    return _apiClient.post('/tenants/', tenantData, authenticated: true);
+  }
+
+  // --- GESTIÓN DE ROLES Y PERMISOS ---
+
+  Future<List<dynamic>> fetchRoles() async {
+    final response = await _apiClient.get('/users/roles/', authenticated: true);
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<List<dynamic>> fetchPermissions() async {
+    final response = await _apiClient.get('/users/permisos/', authenticated: true);
+    if (response is List) return response;
+    return [];
+  }
+
+  Future<dynamic> createRole(Map<String, dynamic> roleData) async {
+    return _apiClient.post('/users/roles/', roleData, authenticated: true);
+  }
+
+  Future<dynamic> updateRole(String id, Map<String, dynamic> roleData) async {
+    return _apiClient.put('/users/roles/$id/', roleData, authenticated: true);
+  }
+
+  Future<dynamic> deleteRole(String id) async {
+    return _apiClient.delete('/users/roles/$id/', authenticated: true);
+  }
+
+  // --- SESIÓN ---
 
   Future<void> refreshToken() async {
     final refresh = await _tokenStorage.readRefreshToken();
@@ -79,12 +170,9 @@ class AuthService {
     final response = await _apiClient.post(ApiConfig.refreshEndpoint, {
       'refresh': refresh,
     });
-    await _tokenStorage.saveAccessToken(response['access'] as String);
+    await _tokenStorage.saveAccessToken((response as Map<String, dynamic>)['access'] as String);
   }
 
-  /// Solo limpia la sesión local: no existe endpoint de blacklist de
-  /// tokens en el backend (djangorestframework_simplejwt.token_blacklist
-  /// no está instalado), así que el logout es puramente del lado cliente.
   Future<void> logout() async {
     await _tokenStorage.clear();
   }

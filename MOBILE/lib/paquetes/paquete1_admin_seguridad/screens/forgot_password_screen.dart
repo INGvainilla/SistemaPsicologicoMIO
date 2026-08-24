@@ -212,10 +212,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 24),
         GradientButton(
-          label: 'Volver al inicio de sesión',
+          label: 'Ingresar código recibido',
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => VerifyResetCodeScreen(
+                  email: _emailController.text.trim(),
+                  service: _service,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('Volver al inicio de sesión'),
         ),
         const SizedBox(height: 12),
         TextButton(

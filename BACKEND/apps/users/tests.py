@@ -202,3 +202,142 @@ class PasswordResetTests(TenantTestCase):
         )
 
         self.assertEqual(reused_response.status_code, 400)
+
+
+class RoleAndUserManagementTests(TenantTestCase):
+    """Pruebas para gestión completa de roles, usuarios y control de acceso (RBAC)."""
+
+    def setUp(self):
+        super().setUp()
+        Dominio.objects.get_or_create(
+            tenant=self.tenant,
+            defaults={'domain': f'{self.tenant.schema_name}.test.com', 'is_primary': True},
+        )
+        self.client = TenantClient(self.tenant)
+
+        # Crear permisos
+        from apps.users.models import Permiso, Rol
+        self.perm_users = Permiso.objects.create(name='Gestionar Usuarios', codename='gestionar_usuarios')
+        self.perm_roles = Permiso.objects.create(name='Gestionar Roles', codename='gestionar_roles')
+
+        # Rol AdminCentro
+        self.rol_admin = Rol.objects.create(name='AdminCentro', description='Admin de centro')
+        self.rol_admin.permisos.add(self.perm_users, self.perm_roles)
+
+        # Rol Paciente
+        self.rol_paciente = Rol.objects.create(name='Paciente', description='Paciente')
+
+        # SuperAdmin User
+        self.superadmin = Usuario.objects.create_superuser(
+            username='admin@sigepsi.com',
+            email='admin@sigepsi.com',
+            password='AdminPassword123!',
+            first_name='Super',
+            last_name='Admin'
+        )
+
+        # Admin Centro User
+        self.admin_centro_user = Usuario.objects.create_user(
+            username='jefe@centro.com',
+            email='jefe@centro.com',
+            password='Password123!',
+            first_name='Jefe',
+            last_name='Centro'
+        )
+        self.admin_centro_user.roles.add(self.rol_admin)
+
+        # Paciente User
+        self.paciente_user = Usuario.objects.create_user(
+            username='paciente@centro.com',
+            email='paciente@centro.com',
+            password='Password123!',
+            first_name='Juan',
+            last_name='Paciente'
+        )
+        self.paciente_user.roles.add(self.rol_paciente)
+
+    def _get_token(self, email, password='Password123!'):
+        if email == 'admin@sigepsi.com':
+            password = 'AdminPassword123!'
+        res = self.client.post(
+            LOGIN_URL,
+            data=json.dumps({'email': email, 'password': password}),
+            content_type='application/json'
+        )
+        return res.json().get('access')
+
+    def test_role_creation_and_editing(self):
+        token = self._get_token('admin@sigepsi.com')
+
+        # 1. Crear nuevo rol con permisos
+        create_res = self.client.post(
+            '/api/users/roles/',
+            data=json.dumps({
+                'name': 'Terapeuta Ocupacional',
+                'description': 'Especialista en terapia ocupacional',
+                'permisos': [str(self.perm_users.id)]
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {token}'
+        )
+        self.assertEqual(create_res.status_code, 201)
+        role_id = create_res.json()['id']
+        self.assertEqual(len(create_res.json()['permisos_details']), 1)
+
+        # 2. Modificar rol existente
+        update_res = self.client.put(
+            f'/api/users/roles/{role_id}/',
+            data=json.dumps({
+                'name': 'Terapeuta Ocupacional Senior',
+                'description': 'Especialista senior con más permisos',
+                'permisos': [str(self.perm_users.id), str(self.perm_roles.id)]
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {token}'
+        )
+        self.assertEqual(update_res.status_code, 200)
+        self.assertEqual(update_res.json()['name'], 'Terapeuta Ocupacional Senior')
+        self.assertEqual(len(update_res.json()['permisos_details']), 2)
+
+    def test_cannot_delete_system_role(self):
+        token = self._get_token('admin@sigepsi.com')
+        res = self.client.delete(
+            f'/api/users/roles/{self.rol_admin.id}/',
+            HTTP_AUTHORIZATION=f'Bearer {token}'
+        )
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('error', res.json())
+
+    def test_user_update_without_changing_password(self):
+        token = self._get_token('admin@sigepsi.com')
+        res = self.client.put(
+            f'/api/users/usuarios/{self.paciente_user.id}/',
+            data=json.dumps({
+                'email': 'paciente@centro.com',
+                'first_name': 'Juan Modificado',
+                'last_name': 'Paciente',
+                'is_active': True,
+                'roles': [str(self.rol_paciente.id)]
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Bearer {token}'
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()['first_name'], 'Juan Modificado')
+
+        # Verificar que la contraseña anterior sigue funcionando
+        login_res = self.client.post(
+            LOGIN_URL,
+            data=json.dumps({'email': 'paciente@centro.com', 'password': 'Password123!'}),
+            content_type='application/json'
+        )
+        self.assertEqual(login_res.status_code, 200)
+
+    def test_paciente_cannot_manage_users(self):
+        token = self._get_token('paciente@centro.com')
+        res = self.client.get(
+            '/api/users/usuarios/',
+            HTTP_AUTHORIZATION=f'Bearer {token}'
+        )
+        self.assertEqual(res.status_code, 403)
+

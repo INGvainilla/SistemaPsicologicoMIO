@@ -29,6 +29,7 @@ export class LoginComponent {
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading = true;
+      this.errorMessage = '';
       const { email, password } = this.loginForm.value;
       
       this.authService.login(email, password).subscribe({
@@ -37,7 +38,7 @@ export class LoginComponent {
         },
         error: (err: any) => {
           this.isLoading = false;
-          this.errorMessage = 'Credenciales incorrectas o cuenta inactiva';
+          this.errorMessage = err.error?.detail || err.error?.error || 'Credenciales incorrectas o cuenta inactiva';
         }
       });
     }
@@ -45,5 +46,13 @@ export class LoginComponent {
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+  }
+
+  fillCredentials(email: string, pass: string) {
+    this.loginForm.patchValue({
+      email: email,
+      password: pass
+    });
+    this.errorMessage = '';
   }
 }

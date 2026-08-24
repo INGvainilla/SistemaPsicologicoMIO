@@ -20,7 +20,7 @@ class ApiConfig {
   static const String meEndpoint = '/users/me/';
 
   // HU-10 / CU27 / RF-31
-  static const String passwordResetEndpoint = '/users/auth/password-reset/request/';
+  static const String passwordResetEndpoint = '/users/auth/password-reset/';
   static const String passwordResetVerifyEndpoint =
       '/users/auth/password-reset-verify/';
   static const String passwordResetConfirmEndpoint =

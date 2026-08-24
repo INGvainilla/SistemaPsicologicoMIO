@@ -3,8 +3,6 @@ import django
 import sys
 import socket
 
-# Setup Django environment
-sys.path.append(r"c:\Users\MARILYN\Documents\Carpeta Esther\Semestre 2-2026\Sistema-Psicol-gico-\BACKEND")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sigepsi.settings")
 django.setup()
 

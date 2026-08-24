@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'paquetes/paquete1_admin_seguridad/providers/auth_provider.dart';
+import 'paquetes/paquete1_admin_seguridad/screens/edit_profile_screen.dart';
 import 'paquetes/paquete1_admin_seguridad/screens/forgot_password_screen.dart';
 import 'paquetes/paquete1_admin_seguridad/screens/login_screen.dart';
 import 'paquetes/paquete1_admin_seguridad/screens/register_screen.dart';
@@ -20,15 +21,20 @@ class SigepsiApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => AuthProvider(),
       child: MaterialApp(
-        title: 'SIGEPSI',
+        title: 'SIGEPSI Móvil',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+        theme: ThemeData(
+          colorSchemeSeed: const Color(0xFF0B4F5C),
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+        ),
         initialRoute: SplashScreen.routeName,
         routes: {
           SplashScreen.routeName: (_) => const SplashScreen(),
           LoginScreen.routeName: (_) => const LoginScreen(),
           RegisterScreen.routeName: (_) => const RegisterScreen(),
           ForgotPasswordScreen.routeName: (_) => const ForgotPasswordScreen(),
+          EditProfileScreen.routeName: (_) => const EditProfileScreen(),
           HomeScreen.routeName: (_) => const HomeScreen(),
         },
       ),

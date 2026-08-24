@@ -1,15 +1,45 @@
 <header class="page-header">
   <div>
-    <h1 class="page-header__title">Gestión de Roles</h1>
-    <p class="page-header__desc">Administre los roles del sistema y asigne permisos específicos para el control de acceso.</p>
+    <h1 class="page-header__title">Gestión de Roles y Permisos</h1>
+    <p class="page-header__desc">Administre los perfiles de acceso y asigne permisos específicos para el control del sistema.</p>
   </div>
-  <a routerLink="/roles/nuevo" class="btn btn--primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+  <a routerLink="/roles/new" class="btn btn--primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
     <svg viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-    Nuevo Rol
+    Crear Nuevo Rol
   </a>
 </header>
 
 <div class="content-card">
+  <!-- Mensajes de Feedback -->
+  <div *ngIf="successMessage" class="alert alert--success" style="margin-bottom: 16px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert--error" style="margin-bottom: 16px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Buscador -->
+  <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="position: relative; max-width: 360px; width: 100%;">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="applyFilter()"
+        placeholder="Buscar rol por nombre o descripción..."
+        class="field__input"
+        style="width: 100%; padding-left: 36px;">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--color-text-muted);">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+      </svg>
+    </div>
+    <span style="font-size: 13px; color: var(--color-text-secondary);">
+      Mostrando {{ filteredRoles.length }} de {{ roles.length }} roles
+    </span>
+  </div>
+
   <div class="table-container">
     <div *ngIf="isLoading" style="padding: 40px; text-align: center; color: var(--color-text-muted);">
       Cargando roles...
@@ -18,30 +48,62 @@
     <table class="data-table" *ngIf="!isLoading">
       <thead>
         <tr>
-          <th style="width: 25%;">Nombre del Rol</th>
-          <th style="width: 40%;">Descripción</th>
-          <th style="width: 20%;">Permisos Asignados</th>
-          <th style="width: 15%;">Acciones</th>
+          <th style="width: 22%;">Nombre del Rol</th>
+          <th style="width: 32%;">Descripción</th>
+          <th style="width: 32%;">Permisos Asignados</th>
+          <th style="width: 14%; text-align: right;">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngIf="roles.length === 0">
-          <td colspan="4" style="text-align: center; padding: 20px;">No hay roles registrados.</td>
+        <tr *ngIf="filteredRoles.length === 0">
+          <td colspan="4" style="text-align: center; padding: 24px; color: var(--color-text-muted);">
+            No se encontraron roles coincidentes.
+          </td>
         </tr>
-        <tr *ngFor="let role of roles">
+        <tr *ngFor="let role of filteredRoles">
           <td>
-            <div style="font-weight: 500; color: var(--color-text);">{{ role.name }}</div>
+            <div style="font-weight: 600; color: var(--color-text); font-size: 14px;">{{ role.name }}</div>
+            <span *ngIf="isProtectedRole(role.name)" style="font-size: 10px; background: var(--color-primary-bg); color: var(--color-primary); padding: 2px 6px; border-radius: 4px; font-weight: 600;">
+              Sistema
+            </span>
           </td>
           <td style="color: var(--color-text-secondary); font-size: 13px;">
-            {{ role.description || 'Sin descripción' }}
+            {{ role.description || 'Sin descripción detallada' }}
           </td>
           <td>
-            <span class="badge badge--info">{{ role.permisos?.length || 0 }} permisos</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 420px;">
+              <span 
+                *ngFor="let perm of role.permisos_details" 
+                style="background: var(--color-bg); border: 1px solid var(--color-border); font-size: 11px; padding: 2px 8px; border-radius: 12px; color: var(--color-text);">
+                {{ perm.name }}
+              </span>
+              <span *ngIf="!role.permisos_details || role.permisos_details.length === 0" style="color: var(--color-text-muted); font-size: 12px; font-style: italic;">
+                Sin permisos asignados
+              </span>
+            </div>
           </td>
-          <td>
-            <button class="btn btn--icon" title="Editar">
-              <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
-            </button>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 8px; align-items: center;">
+              <!-- Botón Editar -->
+              <a 
+                [routerLink]="['/roles/edit', role.id]" 
+                class="btn btn--outline" 
+                style="padding: 6px 10px; font-size: 12px; text-decoration: none;"
+                title="Editar permisos y detalles del rol">
+                <svg viewBox="0 0 20 20" fill="currentColor" style="width: 14px; height: 14px;"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                Editar
+              </a>
+
+              <!-- Botón Eliminar (Deshabilitado si es rol protegido) -->
+              <button 
+                *ngIf="!isProtectedRole(role.name)"
+                (click)="deleteRole(role)" 
+                class="btn btn--outline" 
+                style="padding: 6px 10px; font-size: 12px; color: var(--color-error); border-color: var(--color-error-border);"
+                title="Eliminar rol">
+                <svg viewBox="0 0 20 20" fill="currentColor" style="width: 14px; height: 14px;"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
