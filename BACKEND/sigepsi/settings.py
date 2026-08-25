@@ -120,11 +120,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sigepsi.wsgi.application'
 
-# Configuración de Base de Datos PostgreSQL / Supabase
-db_host = os.getenv('DB_HOST', 'db.dkgnlxpdefqbkhhhqdci.supabase.co').strip()
+# Configuración de Base de Datos PostgreSQL / Supabase (IPv4 Pooler para Railway / Cloud)
+db_host = os.getenv('DB_HOST', 'aws-0-us-east-2.pooler.supabase.com').strip()
 db_port = os.getenv('DB_PORT', '5432').strip()
 db_name = os.getenv('DB_NAME', 'postgres').strip()
-db_user = os.getenv('DB_USER', 'postgres').strip()
+db_user = os.getenv('DB_USER', 'postgres.dkgnlxpdefqbkhhhqdci').strip()
 db_password = os.getenv('DB_PASSWORD', 'M4rGthPkXjkJkV65').strip()
 db_sslmode = os.getenv('DB_SSLMODE', 'require').strip()
 
