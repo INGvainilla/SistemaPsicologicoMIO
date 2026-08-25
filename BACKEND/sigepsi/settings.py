@@ -87,8 +87,8 @@ TENANT_MODEL = "tenants.Centro"
 TENANT_DOMAIN_MODEL = "tenants.Dominio"
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Debe ser el primero para responder a preflights OPTIONS
     'django_tenants.middleware.main.TenantMainMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir archivos estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -178,20 +178,28 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS — en producción restringir a dominios conocidos
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = []
-    if RAILWAY_URL:
-        CORS_ALLOWED_ORIGINS.append(f'https://{RAILWAY_URL}')
-    if VERCEL_URL:
-        CORS_ALLOWED_ORIGINS.append(f'https://{VERCEL_URL}')
-    # Permitir cualquier subdominio de vercel.app para previews
-    CORS_ALLOWED_ORIGIN_REGEXES = [
-        r'^https://.*\.vercel\.app$',
-    ]
+# Configuración de CORS completa para REST API (Web Vercel + Móvil Flutter)
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # HU-10 / CU27 / RF-31: recuperación de contraseña. Por defecto imprime el
 # correo en la consola (útil en desarrollo sin credenciales SMTP reales);
