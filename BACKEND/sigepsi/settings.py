@@ -121,22 +121,27 @@ TEMPLATES = [
 WSGI_APPLICATION = 'sigepsi.wsgi.application'
 
 # Configuración de Base de Datos PostgreSQL / Supabase
-db_sslmode = os.getenv('DB_SSLMODE', '').strip()
+db_host = os.getenv('DB_HOST', 'db.dkgnlxpdefqbkhhhqdci.supabase.co').strip()
+db_port = os.getenv('DB_PORT', '5432').strip()
+db_name = os.getenv('DB_NAME', 'postgres').strip()
+db_user = os.getenv('DB_USER', 'postgres').strip()
+db_password = os.getenv('DB_PASSWORD', 'M4rGthPkXjkJkV65').strip()
+db_sslmode = os.getenv('DB_SSLMODE', 'require').strip()
+
 db_options = {}
-if db_sslmode:
+if db_sslmode and db_sslmode != 'disable':
     db_options['sslmode'] = db_sslmode
-elif os.getenv('DB_HOST', '') not in ['localhost', '127.0.0.1', '']:
-    # Supabase y proveedores en la nube requieren SSL obligatorio
+elif db_host not in ['localhost', '127.0.0.1', '']:
     db_options['sslmode'] = 'require'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': os.getenv('DB_NAME', 'postgres'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': db_name,
+        'USER': db_user,
+        'PASSWORD': db_password,
+        'HOST': db_host,
+        'PORT': db_port,
         'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '600')),
         'CONN_HEALTH_CHECKS': True,
         'OPTIONS': db_options,
