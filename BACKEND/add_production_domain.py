@@ -51,14 +51,22 @@ def add_domain(domain_name):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        # Si no se pasa argumento, intentar usar RAILWAY_PUBLIC_DOMAIN del entorno
-        railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
-        if railway_domain:
-            add_domain(railway_domain)
-        else:
-            print("Uso: python add_production_domain.py <dominio>")
-            print("  O establece la variable de entorno RAILWAY_PUBLIC_DOMAIN")
-            sys.exit(1)
-    else:
+    if len(sys.argv) >= 2:
         add_domain(sys.argv[1])
+    else:
+        # Detectar variables de Railway o Vercel
+        domains_to_add = []
+        for env_var in ['RAILWAY_PUBLIC_DOMAIN', 'RAILWAY_STATIC_URL', 'CUSTOM_DOMAIN']:
+            val = os.getenv(env_var, '').strip()
+            # Limpiar https:// o http:// si vienen incluidos
+            val = val.replace('https://', '').replace('http://', '').split('/')[0]
+            if val and val not in domains_to_add:
+                domains_to_add.append(val)
+
+        if domains_to_add:
+            for d in domains_to_add:
+                add_domain(d)
+        else:
+            print("[INFO] No se detectó dominio en variables de entorno (RAILWAY_PUBLIC_DOMAIN). Continuando sin registrar dominio.")
+            sys.exit(0)
+
