@@ -11,14 +11,19 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Hosts permitidos: en producción Railway asigna un dominio automáticamente
-RAILWAY_URL = os.getenv('RAILWAY_STATIC_URL', os.getenv('RAILWAY_PUBLIC_DOMAIN', ''))
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
-if RAILWAY_URL:
-    ALLOWED_HOSTS.append(RAILWAY_URL)
+# Hosts permitidos
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '.up.railway.app', '.vercel.app']
+env_hosts = os.getenv('ALLOWED_HOSTS', '')
+if env_hosts and env_hosts != '*':
+    ALLOWED_HOSTS.extend(env_hosts.split(','))
 
 # CSRF: confiar en dominios de Railway y Vercel en producción
-CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = [
+    'https://sistemapsicologicomio-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://*.vercel.app',
+]
+RAILWAY_URL = os.getenv('RAILWAY_STATIC_URL', os.getenv('RAILWAY_PUBLIC_DOMAIN', ''))
 if RAILWAY_URL:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_URL}')
 VERCEL_URL = os.getenv('VERCEL_URL', '')

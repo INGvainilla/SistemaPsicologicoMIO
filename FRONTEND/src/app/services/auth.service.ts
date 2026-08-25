@@ -15,8 +15,8 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // URL del backend en Railway — ACTUALIZAR DESPUÉS DEL DEPLOY
-  private readonly PRODUCTION_API_URL = 'https://PENDIENTE.up.railway.app/api';
+  // URL del backend en Railway
+  private readonly PRODUCTION_API_URL = 'https://sistemapsicologicomio-production.up.railway.app/api';
 
   public getApiBaseUrl(): string {
     const hostname = window.location.hostname || 'localhost';

@@ -13,7 +13,7 @@ class ApiConfig {
   /// Para desarrollo local: flutter run --dart-define=API_BASE_URL=http://192.168.0.8:8000/api
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://PENDIENTE.up.railway.app/api',
+    defaultValue: 'https://sistemapsicologicomio-production.up.railway.app/api',
   );
 
   static const String registerEndpoint = '/users/auth/register/';
