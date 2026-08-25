@@ -10,7 +10,20 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['*']
+
+# Hosts permitidos: en producción Railway asigna un dominio automáticamente
+RAILWAY_URL = os.getenv('RAILWAY_STATIC_URL', os.getenv('RAILWAY_PUBLIC_DOMAIN', ''))
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+if RAILWAY_URL:
+    ALLOWED_HOSTS.append(RAILWAY_URL)
+
+# CSRF: confiar en dominios de Railway y Vercel en producción
+CSRF_TRUSTED_ORIGINS = []
+if RAILWAY_URL:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_URL}')
+VERCEL_URL = os.getenv('VERCEL_URL', '')
+if VERCEL_URL:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{VERCEL_URL}')
 
 # Email settings
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
@@ -72,6 +85,7 @@ MIDDLEWARE = [
     'django_tenants.middleware.main.TenantMainMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir archivos estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -150,9 +164,24 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True # Development only
+# CORS — en producción restringir a dominios conocidos
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = []
+    if RAILWAY_URL:
+        CORS_ALLOWED_ORIGINS.append(f'https://{RAILWAY_URL}')
+    if VERCEL_URL:
+        CORS_ALLOWED_ORIGINS.append(f'https://{VERCEL_URL}')
+    # Permitir cualquier subdominio de vercel.app para previews
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r'^https://.*\.vercel\.app$',
+    ]
 
 # HU-10 / CU27 / RF-31: recuperación de contraseña. Por defecto imprime el
 # correo en la consola (útil en desarrollo sin credenciales SMTP reales);

@@ -9,9 +9,11 @@
 class ApiConfig {
   ApiConfig._();
 
+  /// URL por defecto apunta a Railway en producción.
+  /// Para desarrollo local: flutter run --dart-define=API_BASE_URL=http://192.168.0.8:8000/api
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://sanamente.localhost:8000/api',
+    defaultValue: 'https://PENDIENTE.up.railway.app/api',
   );
 
   static const String registerEndpoint = '/users/auth/register/';

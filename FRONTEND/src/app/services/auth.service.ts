@@ -15,8 +15,16 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+  // URL del backend en Railway — ACTUALIZAR DESPUÉS DEL DEPLOY
+  private readonly PRODUCTION_API_URL = 'https://PENDIENTE.up.railway.app/api';
+
   public getApiBaseUrl(): string {
     const hostname = window.location.hostname || 'localhost';
+    // En producción (Vercel u otro dominio), usar la URL de Railway
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('192.168.')) {
+      return this.PRODUCTION_API_URL;
+    }
+    // En desarrollo local
     const port = '8000';
     const protocol = window.location.protocol || 'http:';
     return `${protocol}//${hostname}:${port}/api`;
